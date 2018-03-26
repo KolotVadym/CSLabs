@@ -1,0 +1,93 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace CS.Lab1
+{
+    class Program
+    {
+        static List<string> listofsym = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "а", "б", "в", "г", "ґ", "д", "е", "є", "ж", "з", "и", "і", "ї", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "ь", "ю", "я", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", " ", ".", ",", "!", "?", ":", ";", "-", "(", ")" };
+static void Main(string[] args)
+        {
+                Console.WriteLine("Посилання на документ:");
+                string dir = Console.ReadLine();
+                int[] num = new int[listofsym.Count + 2];
+                CalculateText(dir, num);
+                ShowResult(dir, num);
+                Console.Read();
+        }
+        static void CalculateText(string dir, int[] num)
+        {
+            string symbol = "", line = "";
+            using (StreamReader tr = new StreamReader(dir,Encoding.Default))
+            {
+                while (tr.Peek() != -1)
+                {
+                    line = tr.ReadLine();
+                    for (int i = 0; i < line.Length; i++)
+                    {
+                        symbol = line.Substring(i, 1).ToLower();
+                        num[SymbolIndex(symbol)]++;
+                        num[0]++;
+                    }
+                }
+            }
+        }
+        static int SymbolIndex(string symbol)
+        {           
+            int index = 0;
+            if ((index=listofsym.IndexOf(symbol)) == -1)
+                return listofsym.Count+1;
+            return index+1;
+        }
+        static double Entropy(int[] num)
+        {
+            double entropy = 0;
+            double p = 0;
+            for (int i = 1; i < num.Length; i++)
+            {
+                p = (double)num[i] / (double)num[0];
+                if (p != 0)
+                {
+                    entropy += p * Math.Log((double)1 / p, 2);
+                }
+            }
+            return entropy;
+        }
+        static int AmountOfInformation(double entropy, int amount)
+        {
+            int am_bits = (int)Math.Ceiling(entropy * amount);
+            return (int)Math.Ceiling((double)am_bits / (double)8);
+        }
+        static double Chance(int[] num, int i)
+        {
+            double chance;
+            chance = ((double)num[i] / (double)num[0]) * 100;
+            return chance;
+        }
+        static void ShowResult(string dir, int[] num)
+
+        {
+            Console.WriteLine("Файл: " + dir);
+            Console.WriteLine("Кількість всіх символів у файлі: {0}", num[0]);
+            Console.WriteLine("__________________________________________");
+            Console.WriteLine("| символ | кількіть | ймовірність         ");
+            int count;
+            for (count = 0; count <listofsym.Count; count++)
+            {
+                string str=listofsym[count];
+                Console.WriteLine("__________________________________________");
+                Console.WriteLine("|   {0}    | {1}   |  {2}%",str, num[count+1], Chance(num, count+1));
+            }
+            Console.WriteLine("__________________________________________");
+            Console.WriteLine("|   {0}    | {1}   |  {2}%", "інші", num[count + 1], Chance(num, count + 1));            
+            Console.WriteLine("__________________________________________");
+            double temp_entropy = Entropy(num);
+            Console.WriteLine("Ентропія: {0}", temp_entropy);
+            Console.WriteLine("Кількість інформації: {0} | {1}", AmountOfInformation(temp_entropy, num[0]), new FileInfo(dir).Length);
+        }
+    }
+}
