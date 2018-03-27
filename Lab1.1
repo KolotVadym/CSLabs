@@ -5,51 +5,84 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace CS.Lab1
+namespace CSLab1Part1
 {
     class Program
     {
-        static List<string> listofsym = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "а", "б", "в", "г", "ґ", "д", "е", "є", "ж", "з", "и", "і", "ї", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "ь", "ю", "я", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", " ", ".", ",", "!", "?", ":", ";", "-", "(", ")" };
-static void Main(string[] args)
+        static void Main(string[] args)
         {
-                Console.WriteLine("Посилання на документ:");
-                string dir = Console.ReadLine();
-                int[] num = new int[listofsym.Count + 2];
-                CalculateText(dir, num);
-                ShowResult(dir, num);
-                Console.Read();
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.WriteLine("Path:");
+            string dir = Console.ReadLine();
+            List<string> symbols = new List<string>();
+            List<int> numbers = new List<int>();
+            CalculateText(dir, symbols, numbers);
+            ShowResult(dir, symbols, numbers);
+            Console.Read();
         }
-        static void CalculateText(string dir, int[] num)
+        static void CalculateText(string dir, List<string> symbols, List<int> numbers)
         {
             string symbol = "", line = "";
-            using (StreamReader tr = new StreamReader(dir,Encoding.Default))
+            using (TextReader tr = new StreamReader(dir))
             {
                 while (tr.Peek() != -1)
                 {
                     line = tr.ReadLine();
                     for (int i = 0; i < line.Length; i++)
                     {
-                        symbol = line.Substring(i, 1).ToLower();
-                        num[SymbolIndex(symbol)]++;
-                        num[0]++;
+                        symbol = line.Substring(i, 1);
+                        //symbol = symbol.ToLower();
+                        if (numbers.Count == 0)
+                        {
+                            symbols.Add(symbol);
+                            numbers.Add(1);
+                        }
+                        else
+                        {
+                            for (int q = 0; q < symbols.Count; q++)
+                            {
+                                if (symbols[q] == symbol)
+                                {
+                                    numbers[q]++;
+                                    break;
+                                }
+                                else if (q == symbols.Count - 1)
+                                {
+                                    symbols.Add(symbol);
+                                    numbers.Add(1);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
-        static int SymbolIndex(string symbol)
-        {           
-            int index = 0;
-            if ((index=listofsym.IndexOf(symbol)) == -1)
-                return listofsym.Count+1;
-            return index+1;
+        static void ShowResult(string dir, List<string> symbols, List<int> numbers)
+        {
+            Console.WriteLine("File: " + dir);
+            Console.WriteLine("Number of all symbols: {0}", Number(numbers));
+            for (int i = 0; i < symbols.Count; i++)
+            {
+                Console.WriteLine("Symbol '{0}'    n = {1}    p = {2}%", symbols[i], numbers[i], Chance(numbers, i));
+            }
+            double temp_entropy = Entropy(numbers);
+            Console.WriteLine("Entropy: {0}", temp_entropy);
+            Console.WriteLine("Amount of info: {0} | {1}", AmountOfInformation(temp_entropy, Number(numbers)), new FileInfo(dir).Length);
         }
-        static double Entropy(int[] num)
+        static double Chance(List<int> numbers, int num)
+        {
+            double chance = ((double)numbers[num] / (double)Number(numbers)) * 100;
+            return chance;
+        }
+        static double Entropy(List<int> numbers)
         {
             double entropy = 0;
             double p = 0;
-            for (int i = 1; i < num.Length; i++)
+            //result = sum (1 to m) p*log2(1/p)
+            for (int i = 0; i < numbers.Count; i++)
             {
-                p = (double)num[i] / (double)num[0];
+                p = (double)numbers[i] / (double)Number(numbers);
                 if (p != 0)
                 {
                     entropy += p * Math.Log((double)1 / p, 2);
@@ -60,34 +93,16 @@ static void Main(string[] args)
         static int AmountOfInformation(double entropy, int amount)
         {
             int am_bits = (int)Math.Ceiling(entropy * amount);
-            return (int)Math.Ceiling((double)am_bits / (double)8);
+            return (int)Math.Ceiling((double)am_bits / (double)8);//returns result in bytes
         }
-        static double Chance(int[] num, int i)
+        static int Number(List<int> numbers)
         {
-            double chance;
-            chance = ((double)num[i] / (double)num[0]) * 100;
-            return chance;
-        }
-        static void ShowResult(string dir, int[] num)
-
-        {
-            Console.WriteLine("Файл: " + dir);
-            Console.WriteLine("Кількість всіх символів у файлі: {0}", num[0]);
-            Console.WriteLine("__________________________________________");
-            Console.WriteLine("| символ | кількіть | ймовірність         ");
-            int count;
-            for (count = 0; count <listofsym.Count; count++)
+            int num = 0;
+            for (int i = 0; i < numbers.Count; i++)
             {
-                string str=listofsym[count];
-                Console.WriteLine("__________________________________________");
-                Console.WriteLine("|   {0}    | {1}   |  {2}%",str, num[count+1], Chance(num, count+1));
+                num += numbers[i];
             }
-            Console.WriteLine("__________________________________________");
-            Console.WriteLine("|   {0}    | {1}   |  {2}%", "інші", num[count + 1], Chance(num, count + 1));            
-            Console.WriteLine("__________________________________________");
-            double temp_entropy = Entropy(num);
-            Console.WriteLine("Ентропія: {0}", temp_entropy);
-            Console.WriteLine("Кількість інформації: {0} | {1}", AmountOfInformation(temp_entropy, num[0]), new FileInfo(dir).Length);
+            return num;
         }
     }
-}
+}     
