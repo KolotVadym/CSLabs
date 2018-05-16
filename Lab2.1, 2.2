@@ -53,7 +53,7 @@ namespace CSLab2
                 }
             }
         }
-        private string CheckString(string num_string)
+        public static string CheckString(string num_string)
         {
             if (num_string.Length == 64)
             {
@@ -303,7 +303,7 @@ namespace CSLab2
                 }
                 Console.WriteLine();
                 Console.WriteLine("result");
-                Console.WriteLine(s);
+                Console.WriteLine(CheckString(s));
 
                 divident = ShiftLeft(divident);
             }
