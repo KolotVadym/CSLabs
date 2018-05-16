@@ -14,7 +14,7 @@ namespace CSLab2
             BinaryNumber b = new BinaryNumber(Console.ReadLine());
             Console.WriteLine((a / b)[0]);
             Console.WriteLine((a / b)[1]);
-            Console.WriteLine(a*b);
+            var v = a * b;
         }
     }
     class BinaryNumber
@@ -199,59 +199,97 @@ namespace CSLab2
                     result = result + multiplicand_temp;
                 }
                 multiplicand_temp = BinaryNumber.ShiftLeft(multiplicand_temp);
+
+                Console.WriteLine("Register {0}", multiplier_temp.number.Length-i);
+
+                Console.WriteLine("result");
+
+                for (int k = 0; k < 64; k++)
+                {
+                    if (result.number[k])
+                    {
+                        Console.Write("1");
+                    }
+                    else
+                        Console.Write("0");
+                }
+                Console.WriteLine();
+                Console.WriteLine("multiplier");
+                for (int k = 0; k < 64; k++)
+                {
+                    if (multiplier_temp.number[k])
+                    {
+                        Console.Write("1");
+                    }
+                    else
+                        Console.Write("0");
+                }
+                Console.WriteLine();
+                Console.WriteLine("multiplicand");
+                for (int k = 0; k < 64; k++)
+                {
+                    if (multiplicand_temp.number[k])
+                    {
+                        Console.Write("1");
+                    }
+                    else
+                        Console.Write("0");
+                }
+                Console.WriteLine();
             }
 
-            bool flag = false;
+            //bool flag = false;
             string s = null;
             for (int k = 0; k < 64; k++)
             {
                 if (result.number[k])
                 {
-                    flag = true;
+                    //flag = true;
                     s += "1";
                 }
                 else
-                    if (flag)
+                    //if (flag)
                         s += "0";
             }
             return s;
         }
                 public static string [] operator /(BinaryNumber divident, BinaryNumber divisor)
         {
-
-            bool flag = false;
-            string s=null;
+            string s = null;
             int divis = 0;
-            while (!divisor.number[0])
-            {
-                divisor=ShiftLeft(divisor);
-                divis++;
-            }
-                    for (int i=0; i<=divis; i++)
-                    {
-                        if (GreaterEqual(divident, divisor))
-                        {
-                            divident = divident - divisor;
-                            s += "1";
-                            flag = true;
-                        }
-                        else
-                            if(flag)
-                            s += "0";
+            int div = 0;
 
-                        divisor=ShiftRigth(divisor);
-                    }
-                    flag = false;
+
+
+
+            for (div = 0; !divident.number[div]; div++) ;
+            for (divis = 0; !divisor.number[divis]; divis++) ;
+            for (int i = divis-div; i > 0; i-- )
+            {
+                divisor = ShiftLeft(divisor);
+            }
+
+            for (int i = divis - div; i>=0; i--)
+            {
+                if (GreaterEqual(divident, divisor))
+                {
+                    divident = divident - divisor;
+                    s += "1";
+                }
+                else
+                        s += "0";
+
+                divident = ShiftLeft(divident);
+            }
+            divident = ShiftRigth(divident);
                     string s1 = null;
-                    for (int k = 0;k<64 ;k++ )
+                    for (int k = 0; k < 64 - (divis - div); k++)
                     {
                         if (divident.number[k])
                         {
-                            flag = true;
                             s1 += "1";
                         }
                         else
-                            if (flag)
                                 s1 += "0";
                     }
                     return new string[] {s,s1};
